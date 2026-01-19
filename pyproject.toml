@@ -16,6 +16,7 @@ license = "LGPL-3.0-or-later"
 
 [dependency-groups]
 dev = [
+    "pytest-cov>=7.0.0",
     "ruff>=0.14.13",
     "ty>=0.0.12",
 ]

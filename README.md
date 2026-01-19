@@ -29,7 +29,7 @@ pip install uv
 
 ```bash
 # Clone the repository
-git clone https://github.com/Robotics-Technology/PyLSS.git
+git clone https://github.com/motius/pyLSS
 cd PyLSS
 
 # Install dependencies
