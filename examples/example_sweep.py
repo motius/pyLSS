@@ -1,48 +1,58 @@
-#
-# Author:			Sebastien Parent-Charette (support@robotshop.com)
-# Version:		1.0.0
-# Licence:		LGPL-3.0 (GNU Lesser General Public License version 3)
-#
-# Desscription:	Basic example of the LSS moving back and forth.
-#
+# Author: Sebastien Parent-Charette (support@robotshop.com)
+# License: LGPL-3.0 (GNU Lesser General Public License version 3)
+# Description: Basic example of the LSS moving back and forth.
 
-# Import required liraries
 import time
 import serial
-
-# Import LSS library
-import lss
-import lss_const as lssc
+from pylss import LSS
+from pylss.constants import DEFAULT_BAUD
 
 # Constants
-# CST_LSS_Port = "/dev/ttyUSB0"		# For Linux/Unix platforms
-CST_LSS_Port = "COM230"  # For windows platforms
-CST_LSS_Baud = lssc.LSS_DefaultBaud
+# PORT = "/dev/ttyUSB0"  # For Linux/Unix platforms
+PORT = "COM230"  # For Windows platforms
+BAUD_RATE = DEFAULT_BAUD
 
-# Create and open a serial port
-lss.initBus(CST_LSS_Port, CST_LSS_Baud)
 
-# Create an LSS object
-myLSS = lss.LSS(0)
+def main() -> None:
+    """Move the servo back and forth between -180 and +180 degrees."""
+    # Create and open a serial port
+    bus = serial.Serial(PORT, BAUD_RATE, timeout=0.1)
 
-# Initialize LSS to position 0.0 deg
-myLSS.move(0)
+    try:
+        # Create an LSS object for servo ID 0
+        servo = LSS(0, bus)
 
-# Wait for it to get there
-time.sleep(2)
+        # Initialize LSS to position 0.0 degrees
+        servo.move_deg(0.0)
+        print("Moving to 0 degrees...")
 
-# Loops between -180.0 deg and 180 deg, taking 1 second pause between each half-circle move.
-while 1:
-    # Send LSS to half a turn counter-clockwise from zero (assumes gyre = 1)
-    myLSS.move(-1800)
+        # Wait for it to get there
+        time.sleep(2)
 
-    # Wait for two seconds
-    time.sleep(2)
+        print("Starting sweep. Press Ctrl+C to stop.")
 
-    # Send LSS to half a turn clockwise from zero (assumes gyre = 1)
-    myLSS.move(1800)
+        # Loop between -180.0 deg and 180.0 deg, pausing 2 seconds between moves
+        while True:
+            # Send LSS to half a turn counter-clockwise from zero (assumes gyre = 1)
+            print("Moving to -180 degrees")
+            servo.move_deg(-180.0)
 
-    # Wait for two seconds
-    time.sleep(2)
+            # Wait for two seconds
+            time.sleep(2)
 
-### EOF #######################################################################
+            # Send LSS to half a turn clockwise from zero (assumes gyre = 1)
+            print("Moving to +180 degrees")
+            servo.move_deg(180.0)
+
+            # Wait for two seconds
+            time.sleep(2)
+
+    except KeyboardInterrupt:
+        print("\nStopped by user")
+    finally:
+        # Clean up
+        bus.close()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,59 +1,77 @@
-#
-# Author:			Sebastien Parent-Charette (support@robotshop.com)
-# Version:		1.0.0
-# Licence:		LGPL-3.0 (GNU Lesser General Public License version 3)
-#
-# Desscription:	Moves one LSS using the position of a second LSS.
-#
+# Author: Sebastien Parent-Charette (support@robotshop.com)
+# License: LGPL-3.0 (GNU Lesser General Public License version 3)
+# Description: Moves one LSS using the position of a second LSS.
+# One servo acts as an input (limp mode) and the other mimics its position.
 
-# Import required liraries
 import time
 import serial
-
-# Import LSS library
-import lss
-import lss_const as lssc
+from pylss import LSS
+from pylss.constants import DEFAULT_BAUD
 
 # Constants
-# CST_LSS_Port = "/dev/ttyUSB0"		# For Linux/Unix platforms
-CST_LSS_Port = "COM230"  # For windows platforms
-CST_LSS_Baud = lssc.LSS_DefaultBaud
+# PORT = "/dev/ttyUSB0"  # For Linux/Unix platforms
+PORT = "COM230"  # For Windows platforms
+BAUD_RATE = DEFAULT_BAUD
 
-# Create and open a serial port
-lss.initBus(CST_LSS_Port, CST_LSS_Baud)
+# Hysteresis threshold in tenths of degrees (±2 tenths = ±0.2 degrees)
+POSITION_THRESHOLD = 2
 
-# Create two LSS object; one for output (ID=0), one for input (ID=1)
-myLSS_Output = lss.LSS(0)
-myLSS_Input = lss.LSS(1)
 
-# Initialize LSS output to position 0.0
-myLSS_Output.move(0)
+def main() -> None:
+    """Use one servo as input (knob) to control another servo (output)."""
+    # Create and open a serial port
+    bus = serial.Serial(PORT, BAUD_RATE, timeout=0.1)
 
-# Wait for it to get there
-time.sleep(2)
+    try:
+        # Create two LSS objects: one for output (ID=0), one for input (ID=1)
+        output_servo = LSS(0, bus)
+        input_servo = LSS(1, bus)
 
-# Lower output servo stiffness
-myLSS_Output.setAngularStiffness(4)
-myLSS_Output.setMaxSpeedRPM(15)
+        # Initialize output servo to position 0.0 degrees
+        print("Initializing output servo to 0 degrees...")
+        output_servo.move_deg(0.0)
 
-# Make input servo limp (no active resistance)
-myLSS_Input.limp()
-# Reproduces position of myLSS_Input on myLSS_Output
-pos = 0
-while 1:
-    # Wait ~20 ms before sending another command (update at most 50 times per second)
-    time.sleep(0.02)
+        # Wait for it to get there
+        time.sleep(2)
 
-    # Get position & check if it is valid (ex: servo missing)
-    lastPos = pos
-    posRead = myLSS_Input.getPosition()
-    if posRead is not None:
-        pos = int(posRead, 10)
+        # Configure output servo for smooth following
+        print("Configuring output servo...")
+        output_servo.set_angular_stiffness(4)
+        output_servo.set_max_speed_rpm(15)
 
-        # Check if pos changed enough to warrant sending/showing (hysterisis of ±2)
-        if (pos < (lastPos - 2)) or (pos > (lastPos + 2)):
-            # Send position to output servo and terminal
-            print("Input @ " + str(pos))
-            myLSS_Output.move(pos)
+        # Make input servo limp (no active resistance, acts as a knob)
+        print("Setting input servo to limp mode...")
+        input_servo.limp()
 
-### EOF #######################################################################
+        print("\nMimicking input servo position. Press Ctrl+C to stop.")
+        print("Manually move the input servo to control the output servo.\n")
+
+        # Track last position to implement hysteresis
+        last_position_deg = 0.0
+
+        # Reproduce position of input_servo on output_servo
+        while True:
+            # Wait ~20 ms before sending another command (update at most 50 times per second)
+            time.sleep(0.02)
+
+            # Get position from input servo
+            current_position_deg = input_servo.get_position_deg()
+
+            # Check if position changed enough to warrant sending (hysteresis of ±0.2 degrees)
+            position_delta = abs(current_position_deg - last_position_deg)
+
+            if position_delta > (POSITION_THRESHOLD / 10):
+                # Send position to output servo and display
+                print(f"Input @ {current_position_deg:6.1f}° → Output")
+                output_servo.move_deg(current_position_deg)
+                last_position_deg = current_position_deg
+
+    except KeyboardInterrupt:
+        print("\nStopped by user")
+    finally:
+        # Clean up
+        bus.close()
+
+
+if __name__ == "__main__":
+    main()

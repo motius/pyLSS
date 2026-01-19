@@ -4,9 +4,27 @@ version = "0.1.0"
 description = "Lynxmotion Smart Servo (LSS) Python Library"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pyserial>=3.5",
+    "pytest>=9.0.2",
+]
 authors = [
     { name = "Sebastien Parent-Charette", email = "support@robotshop.com"},
     { name = "Sebastian Plamauer", email = "sebastian.plamauer@motius.de"}
     ]
 license = "LGPL-3.0-or-later"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.13",
+    "ty>=0.0.12",
+]
+test = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py", "test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

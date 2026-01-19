@@ -1,48 +1,58 @@
-#
-# Author:			Sebastien Parent-Charette (support@robotshop.com)
-# Version:		1.0.0
-# Licence:		LGPL-3.0 (GNU Lesser General Public License version 3)
-#
-# Desscription:	Basic example of reading values from the LSS and placing
-# them on the terminal.
-#
+# Author: Sebastien Parent-Charette (support@robotshop.com)
+# License: LGPL-3.0 (GNU Lesser General Public License version 3)
+# Description: Basic example of reading values from the LSS and displaying
+# them in the terminal.
 
-# Import required liraries
 import time
 import serial
-
-# Import LSS library
-import lss
-import lss_const as lssc
+from pylss import LSS
+from pylss.constants import DEFAULT_BAUD
 
 # Constants
-# CST_LSS_Port = "/dev/ttyUSB0"		# For Linux/Unix platforms
-CST_LSS_Port = "COM230"  # For windows platforms
-CST_LSS_Baud = lssc.LSS_DefaultBaud
+# PORT = "/dev/ttyUSB0"  # For Linux/Unix platforms
+PORT = "COM230"  # For Windows platforms
+BAUD_RATE = DEFAULT_BAUD
 
-# Create and open a serial port
-lss.initBus(CST_LSS_Port, CST_LSS_Baud)
 
-# Create an LSS object
-myLSS = lss.LSS(0)
+def main() -> None:
+    """Query and display servo telemetry continuously."""
+    # Create and open a serial port
+    bus = serial.Serial(PORT, BAUD_RATE, timeout=0.1)
 
-while 1:
-    # Get the values from LSS
-    print("\r\nQuerying LSS...")
-    pos = myLSS.getPosition()
-    rpm = myLSS.getSpeedRPM()
-    curr = myLSS.getCurrent()
-    volt = myLSS.getVoltage()
-    temp = myLSS.getTemperature()
+    try:
+        # Create an LSS object for servo ID 0
+        servo = LSS(0, bus)
 
-    # Display the values in terminal
-    print("\r\n---- Telemetry ----")
-    print("Position  (1/10 deg) = " + str(pos))
-    print("Speed          (rpm) = " + str(rpm))
-    print("Curent          (mA) = " + str(curr))
-    print("Voltage         (mV) = " + str(volt))
-    print("Temperature (1/10 C) = " + str(temp))
-    # Wait 1 second
-    time.sleep(1)
+        print("Querying LSS telemetry. Press Ctrl+C to stop.\n")
 
-### EOF #######################################################################
+        while True:
+            # Get the values from LSS
+            print("Querying LSS...")
+
+            position = servo.get_position_deg()
+            rpm = servo.get_speed_rpm()
+            current = servo.get_current()
+            voltage = servo.get_voltage()
+            temperature = servo.get_temperature()
+
+            # Display the values in terminal
+            print("\n---- Telemetry ----")
+            print(f"Position:      {position:7.1f} degrees")
+            print(f"Speed:         {rpm:7d} rpm")
+            print(f"Current:       {current:7d} mA")
+            print(f"Voltage:       {voltage:7d} mV ({voltage / 1000:.1f} V)")
+            print(f"Temperature:   {temperature / 10:7.1f} °C")
+            print()
+
+            # Wait 1 second
+            time.sleep(1)
+
+    except KeyboardInterrupt:
+        print("\nStopped by user")
+    finally:
+        # Clean up
+        bus.close()
+
+
+if __name__ == "__main__":
+    main()
