@@ -1,4 +1,5 @@
-# LSS_Libraries_Python
+# Lynxmotion Smart Servo (LSS) Python Library
+
 Official Lynxmotion Smart Servo (LSS) libraries for Python
 
 Read more about the LSS on our [wiki](https://www.robotshop.com/info/wiki/lynxmotion/view/lynxmotion-smart-servo/).

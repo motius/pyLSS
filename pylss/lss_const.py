@@ -1,20 +1,22 @@
 ###############################################################################
-#	Author:			Sebastien Parent-Charette (support@robotshop.com)
-#	Version:		1.0.0
-#	Licence:		LGPL-3.0 (GNU Lesser General Public License version 3)
-#	
-#	Desscription:	A library that makes using the LSS simple.
-#					Offers support for most Python platforms.
-#					Uses the Python serial library (pySerial).
+# Author:			Sebastien Parent-Charette (support@robotshop.com)
+# Version:		1.0.0
+# Licence:		LGPL-3.0 (GNU Lesser General Public License version 3)
+#
+# Desscription:	A library that makes using the LSS simple.
+# Offers support for most Python platforms.
+# Uses the Python serial library (pySerial).
 ###############################################################################
 
 ### List of constants
 
 # Bus communication
 LSS_DefaultBaud = 115200
-LSS_MaxTotalCommandLength = (30 + 1)	# ex: #999XXXX-2147483648\r Adding 1 for end string char (\0)
-#										# ex: #999XX000000000000000000\r
-LSS_Timeout = 100						# in ms
+LSS_MaxTotalCommandLength = (
+    30 + 1
+)  # ex: #999XXXX-2147483648\r Adding 1 for end string char (\0)
+# # ex: #999XX000000000000000000\r
+LSS_Timeout = 100  # in ms
 LSS_CommandStart = "#"
 LSS_CommandReplyStart = "*"
 LSS_CommandEnd = "\r"
@@ -49,8 +51,8 @@ LSS_StatusTravelling = 4
 LSS_StatusDecelerating = 5
 LSS_StatusHolding = 6
 LSS_StatusOutsideLimits = 7
-LSS_StatusStuck = 8				#cannot move at current speed setting
-LSS_StatusBlocked = 9			#same as stuck but reached maximum duty and still can't move
+LSS_StatusStuck = 8  # cannot move at current speed setting
+LSS_StatusBlocked = 9  # same as stuck but reached maximum duty and still can't move
 LSS_StatusSafeMode = 10
 LSS_StatusLast = 11
 
